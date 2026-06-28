@@ -40,10 +40,10 @@ const lessons = [
     goals: ["选择合适的基础图表", "从图中发现趋势与异常", "避免误导性的可视化"]
   },
   {
-    id: "game-portal", name: "挑战传送门", kicker: "第六站 · 检验理解", x: 79, y: 70,
+    id: "game-portal", name: "聚类传送门", kicker: "第六站 · 无监督学习", x: 79, y: 70,
     art: "02_intro_continent/locations/06_game_portal/game_portal_bg.png",
-    description: "通过轻量挑战重组本章概念。答错不是失败，它只是地图上另一条可探索的路。",
-    goals: ["完成概念配对", "修复一个错误规则", "解释模型的一次预测"]
+    description: "进入没有标签的星图，亲手放置聚类中心，让星灵按照距离形成自己的部落。",
+    goals: ["理解聚类与分类的区别", "体验 K-means 的分配与更新", "观察算法如何迭代至收敛"]
   },
   {
     id: "course-port", name: "课程港口", kicker: "第七站 · 整理与启航", x: 49, y: 81,
@@ -100,14 +100,6 @@ const lessonDetails = {
       '<div class="concept-box"><strong>示例数据集</strong><p>营地收集了 20 个西瓜样本，其中 12 个好瓜、8 个坏瓜；色泽统计为青绿 9 个、乌黑 6 个、浅白 5 个。切换视图，观察“标签分布”和“特征分布”回答的是不同问题。</p></div>'
     ].join("")
   },
-  "game-portal": {
-    duration: "8 分钟",
-    activityTitle: "三题守门挑战",
-    content: [
-      '<div class="concept-box"><strong>通关前的三条主线</strong><p>第一，数据用样本、特征和标签描述经验；第二，算法从数据中学习出模型；第三，模型的价值要看它能否适用于未见过的新样本。</p></div>',
-      '<div class="formula-line">数据是经验　算法是方法　模型是学到的规律　泛化是最终目标</div>'
-    ].join("")
-  },
   "course-port": {
     duration: "5 分钟",
     activityTitle: "装好你的启航行囊",
@@ -159,12 +151,6 @@ const activityTemplates = {
     '<div class="chart-tabs"><button class="chart-tab" data-action="chart-view" data-value="labels">标签分布</button><button class="chart-tab" data-action="chart-view" data-value="features">色泽分布</button></div>',
     '<div class="mini-chart" data-chart><span>选择一种视图开始观察</span></div>'
   ].join(""),
-  "game-portal": () => [
-    '<div class="quiz-question" data-question="q1"><p>1. “色泽=青绿”中的“色泽”是什么？</p><div class="quiz-options"><button class="quiz-option" data-action="quiz-option" data-value="feature">特征</button><button class="quiz-option" data-action="quiz-option" data-value="label">标签</button></div></div>',
-    '<div class="quiz-question" data-question="q2"><p>2. 模型在未见过的样本上也表现良好，说明什么？</p><div class="quiz-options"><button class="quiz-option" data-action="quiz-option" data-value="memorize">记忆力强</button><button class="quiz-option" data-action="quiz-option" data-value="generalize">泛化能力好</button></div></div>',
-    '<div class="quiz-question" data-question="q3"><p>3. 哪一项通常不是机器学习？</p><div class="quiz-options"><button class="quiz-option" data-action="quiz-option" data-value="recommend">行为驱动的推荐</button><button class="quiz-option" data-action="quiz-option" data-value="program">固定公式计算器</button></div></div>',
-    '<button class="activity-submit" data-action="submit-quiz">提交答案</button>'
-  ].join(""),
   "course-port": () => [
     '<div class="check-list">',
     '<button class="check-card" data-action="toggle-summary" data-value="terms">□ 我能解释样本、特征和标签</button>',
@@ -181,8 +167,29 @@ const state = {
   toastTimer: null
 };
 
+const clusterPoints = [
+  { id: "A1", x: 17, y: 20 }, { id: "A2", x: 24, y: 28 }, { id: "A3", x: 16, y: 35 },
+  { id: "A4", x: 30, y: 18 }, { id: "A5", x: 28, y: 39 },
+  { id: "B1", x: 43, y: 68 }, { id: "B2", x: 50, y: 78 }, { id: "B3", x: 56, y: 65 },
+  { id: "B4", x: 45, y: 84 }, { id: "B5", x: 59, y: 80 },
+  { id: "C1", x: 73, y: 20 }, { id: "C2", x: 82, y: 29 }, { id: "C3", x: 90, y: 17 },
+  { id: "C4", x: 77, y: 39 }, { id: "C5", x: 90, y: 36 }
+];
+
+const clusterColors = ["青蓝星群", "玫红星群", "琥珀星群", "紫晶星群"];
+
+const gameState = {
+  k: null,
+  phase: "k",
+  centers: [],
+  assignments: [],
+  iteration: 0,
+  movement: null
+};
+
 const app = document.querySelector("#app");
 const dialog = document.querySelector(".lesson-dialog");
+const clusterGame = document.querySelector(".cluster-game");
 
 function nodeButton(item, status, kind) {
   const button = document.createElement("button");
@@ -391,6 +398,204 @@ function handleActivity(action, control) {
   return false;
 }
 
+function gameMessage(message) {
+  clusterGame.querySelector("[data-game-message]").textContent = message;
+}
+
+function renderClusterBoard() {
+  const pointsLayer = clusterGame.querySelector(".cluster-points");
+  const centersLayer = clusterGame.querySelector(".cluster-centers");
+
+  pointsLayer.innerHTML = clusterPoints.map((point, index) => {
+    const assignment = gameState.assignments[index];
+    const clusterClass = Number.isInteger(assignment) ? ` cluster-${assignment}` : "";
+    const seedClass = gameState.centers.some(center => center.sourceId === point.id) ? " is-seed" : "";
+    return `<button class="star-point${clusterClass}${seedClass}" type="button" data-action="select-seed" data-point-id="${point.id}" style="left:${point.x}%;top:${100 - point.y}%" aria-label="星灵 ${point.id}"></button>`;
+  }).join("");
+
+  centersLayer.innerHTML = gameState.centers.map((center, index) =>
+    `<div class="cluster-center cluster-${index}" style="left:${center.x}%;top:${100 - center.y}%"><span>${index + 1}</span></div>`
+  ).join("");
+}
+
+function renderClusterLegend() {
+  const legend = clusterGame.querySelector("[data-cluster-legend]");
+  if (!gameState.assignments.length) {
+    legend.innerHTML = '<div class="legend-item"><span>星群尚未划分</span><b>--</b></div>';
+    return;
+  }
+  legend.innerHTML = Array.from({ length: gameState.k }, (_, index) => {
+    const count = gameState.assignments.filter(value => value === index).length;
+    return `<div class="legend-item"><span><i class="legend-swatch cluster-${index}"></i>${clusterColors[index]}</span><b>${count} 只</b></div>`;
+  }).join("");
+}
+
+function renderGameState() {
+  renderClusterBoard();
+  renderClusterLegend();
+
+  clusterGame.querySelector("[data-stat-k]").textContent = gameState.k || "?";
+  clusterGame.querySelector("[data-stat-move]").textContent = gameState.movement === null ? "--" : gameState.movement.toFixed(2);
+  clusterGame.querySelector("[data-game-iteration]").textContent = gameState.iteration;
+
+  clusterGame.querySelectorAll("[data-action='choose-k']").forEach(button => {
+    button.classList.toggle("is-selected", Number(button.dataset.k) === gameState.k);
+  });
+
+  const order = ["k", "seed", "assign", "update"];
+  const currentIndex = gameState.phase === "complete" ? order.length : order.indexOf(gameState.phase);
+  clusterGame.querySelectorAll("[data-game-step]").forEach(step => {
+    const index = order.indexOf(step.dataset.gameStep);
+    step.classList.toggle("is-current", index === currentIndex);
+    step.classList.toggle("is-done", index < currentIndex);
+  });
+
+  const phaseLabel = clusterGame.querySelector("[data-game-phase]");
+  const nextButton = clusterGame.querySelector("[data-action='game-next']");
+  const finishButton = clusterGame.querySelector("[data-action='finish-game']");
+  const insightTitle = clusterGame.querySelector("[data-insight-title]");
+  const insightText = clusterGame.querySelector("[data-insight-text]");
+
+  if (gameState.phase === "k") {
+    phaseLabel.textContent = "等待选择 K";
+    nextButton.textContent = "请先选择 K = 3";
+    nextButton.disabled = true;
+    insightTitle.textContent = "什么是聚类？";
+    insightText.textContent = "聚类是一种无监督学习：数据只有特征，没有预先给出的标签。算法尝试让同组样本更相似、不同组样本差异更大。";
+  } else if (gameState.phase === "seed") {
+    phaseLabel.textContent = "布置初始信标";
+    nextButton.textContent = gameState.centers.length === gameState.k ? "按最近距离划分星群 →" : `还需选择 ${gameState.k - gameState.centers.length} 个中心`;
+    nextButton.disabled = gameState.centers.length !== gameState.k;
+    insightTitle.textContent = "初始化会影响结果";
+    insightText.textContent = "K-means 需要先放置 K 个初始中心。把中心放得分散一些，通常更容易找到自然形成的群体。";
+  } else if (gameState.phase === "assign") {
+    phaseLabel.textContent = "重新计算归属";
+    nextButton.textContent = "按最近距离重新划分 →";
+    nextButton.disabled = false;
+    insightTitle.textContent = "分配步骤";
+    insightText.textContent = "计算每个样本到各中心的距离，并把它分给最近的中心。这一步固定中心、更新成员归属。";
+  } else if (gameState.phase === "update") {
+    phaseLabel.textContent = "等待移动信标";
+    nextButton.textContent = "把信标移到群体中心 →";
+    nextButton.disabled = false;
+    insightTitle.textContent = "更新步骤";
+    insightText.textContent = "对每一组成员求平均位置，把聚类中心移动到那里。这一步固定成员归属、更新中心。";
+  } else {
+    phaseLabel.textContent = "星群已经稳定";
+    nextButton.textContent = "聚类完成 ✓";
+    nextButton.disabled = true;
+    finishButton.hidden = false;
+    insightTitle.textContent = "收敛完成";
+    insightText.textContent = "当成员归属不再改变、中心也几乎不再移动时，算法收敛。你刚刚亲手完成了一次 K-means 聚类。";
+  }
+
+  if (gameState.phase !== "complete") finishButton.hidden = true;
+}
+
+function resetClusterGame() {
+  gameState.k = null;
+  gameState.phase = "k";
+  gameState.centers = [];
+  gameState.assignments = [];
+  gameState.iteration = 0;
+  gameState.movement = null;
+  gameMessage("先观察星图，你认为这里有几个自然形成的群体？");
+  renderGameState();
+}
+
+function chooseClusterK(k) {
+  gameState.k = k;
+  gameState.centers = [];
+  gameState.assignments = [];
+  gameState.iteration = 0;
+  gameState.movement = null;
+  if (k === 3) {
+    gameState.phase = "seed";
+    gameMessage("判断正确：星图上有三个较明显的密集区域。现在点击三只相距较远的星灵，作为初始中心。");
+  } else {
+    gameState.phase = "k";
+    gameMessage(k < 3 ? "K 太小会把两个自然群体硬挤在一起。再观察一次星图。" : "K 太大会拆开本来紧密的一群。试试更简洁的划分。");
+  }
+  renderGameState();
+}
+
+function chooseClusterSeed(pointId) {
+  if (gameState.phase !== "seed" || gameState.centers.length >= gameState.k) return;
+  if (gameState.centers.some(center => center.sourceId === pointId)) return;
+  const point = clusterPoints.find(item => item.id === pointId);
+  gameState.centers.push({ x: point.x, y: point.y, sourceId: point.id });
+  gameMessage(gameState.centers.length === gameState.k ? "三个初始信标就位。下一步，让每只星灵寻找离自己最近的信标。" : `已放置 ${gameState.centers.length} / ${gameState.k} 个信标。`);
+  renderGameState();
+}
+
+function assignClusters() {
+  gameState.assignments = clusterPoints.map(point => {
+    let bestIndex = 0;
+    let bestDistance = Infinity;
+    gameState.centers.forEach((center, index) => {
+      const distance = Math.hypot(point.x - center.x, point.y - center.y);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = index;
+      }
+    });
+    return bestIndex;
+  });
+  gameState.centers = gameState.centers.map(center => ({ x: center.x, y: center.y }));
+  gameState.iteration += 1;
+  gameState.phase = "update";
+  gameMessage("星灵已经按最近距离归队。现在移动信标，让它站到本群成员的平均位置。");
+  renderGameState();
+}
+
+function updateClusterCenters() {
+  let totalMovement = 0;
+  const newCenters = gameState.centers.map((center, index) => {
+    const members = clusterPoints.filter((_, pointIndex) => gameState.assignments[pointIndex] === index);
+    if (!members.length) return center;
+    const next = {
+      x: members.reduce((sum, point) => sum + point.x, 0) / members.length,
+      y: members.reduce((sum, point) => sum + point.y, 0) / members.length
+    };
+    totalMovement += Math.hypot(next.x - center.x, next.y - center.y);
+    return next;
+  });
+  gameState.centers = newCenters;
+  gameState.movement = totalMovement / gameState.k;
+
+  if (gameState.movement < 0.35 && gameState.iteration >= 2) {
+    gameState.phase = "complete";
+    gameMessage("中心位置几乎不再变化，三个星群已经收敛。聚类任务完成！");
+  } else {
+    gameState.phase = "assign";
+    gameMessage("信标已经移动。成员最近的信标可能改变，再执行一次“划分 → 更新”。");
+  }
+  renderGameState();
+}
+
+function advanceClusterGame() {
+  if (gameState.phase === "seed" || gameState.phase === "assign") assignClusters();
+  else if (gameState.phase === "update") updateClusterCenters();
+}
+
+function openClusterGame(lesson) {
+  state.activeLesson = lesson;
+  dialog.hidden = true;
+  clusterGame.hidden = false;
+  resetClusterGame();
+}
+
+function finishLesson(lesson) {
+  const wasDone = state.completed.has(lesson.id);
+  state.completed.add(lesson.id);
+  localStorage.setItem("ai-map-progress", JSON.stringify([...state.completed]));
+  dialog.hidden = true;
+  clusterGame.hidden = true;
+  renderContinent();
+  const index = lessons.findIndex(item => item.id === lesson.id);
+  showToast(wasDone ? "这一站的知识已经重新温习。" : index === lessons.length - 1 ? "启程之森探索完成！新的大陆即将开放。" : `探索完成，“${lessons[index + 1].name}”已解锁！`);
+}
+
 function openLesson(lesson) {
   state.activeLesson = lesson;
   const details = lessonDetails[lesson.id];
@@ -421,7 +626,9 @@ function openLesson(lesson) {
   const completeButton = dialog.querySelector("[data-action='complete-lesson']");
   completeButton.disabled = !isDone;
   completeButton.innerHTML = isDone ? "结束回顾 <span aria-hidden='true'>✓</span>" : "完成本站 <span aria-hidden='true'>→</span>";
-  dialog.showModal();
+  dialog.dataset.theme = lesson.id;
+  dialog.hidden = false;
+  dialog.querySelector(".lesson-scroll").scrollTop = 0;
 }
 
 document.addEventListener("click", event => {
@@ -432,7 +639,10 @@ document.addEventListener("click", event => {
       return;
     }
     if (node.dataset.kind === "continent") navigate("intro");
-    else openLesson(lessons.find(item => item.id === node.dataset.id));
+    else {
+      const lesson = lessons.find(item => item.id === node.dataset.id);
+      lesson.id === "game-portal" ? openClusterGame(lesson) : openLesson(lesson);
+    }
     return;
   }
 
@@ -440,7 +650,13 @@ document.addEventListener("click", event => {
   const action = actionControl?.dataset.action;
   if (handleActivity(action, actionControl)) return;
   if (action === "world") navigate("world");
-  if (action === "close-dialog") dialog.close();
+  if (action === "close-scene") dialog.hidden = true;
+  if (action === "close-game") clusterGame.hidden = true;
+  if (action === "choose-k") chooseClusterK(Number(actionControl.dataset.k));
+  if (action === "select-seed") chooseClusterSeed(actionControl.dataset.pointId);
+  if (action === "game-next") advanceClusterGame();
+  if (action === "reset-game") resetClusterGame();
+  if (action === "finish-game" && state.activeLesson) finishLesson(state.activeLesson);
   if (action === "reset") {
     state.completed.clear();
     localStorage.removeItem("ai-map-progress");
@@ -448,19 +664,15 @@ document.addEventListener("click", event => {
     showToast("探索进度已重置，可以重新出发了。 ");
   }
   if (action === "complete-lesson" && state.activeLesson) {
-    const wasDone = state.completed.has(state.activeLesson.id);
-    state.completed.add(state.activeLesson.id);
-    localStorage.setItem("ai-map-progress", JSON.stringify([...state.completed]));
-    dialog.close();
-    renderContinent();
-    const index = lessons.findIndex(item => item.id === state.activeLesson.id);
-    showToast(wasDone ? "这一站的知识已经重新温习。" : index === lessons.length - 1 ? "启程之森探索完成！新的大陆即将开放。" : `探索完成，“${lessons[index + 1].name}”已解锁！`);
+    finishLesson(state.activeLesson);
   }
 });
 
 window.addEventListener("hashchange", renderRoute);
 window.addEventListener("keydown", event => {
-  if (event.key === "Escape" && dialog.open) dialog.close();
+  if (event.key !== "Escape") return;
+  if (!clusterGame.hidden) clusterGame.hidden = true;
+  else if (!dialog.hidden) dialog.hidden = true;
 });
 
 if (!location.hash) history.replaceState(null, "", "#world");

@@ -80,9 +80,10 @@
 
   <div class="toast" role="status" aria-live="polite"></div>
 
-  <dialog class="lesson-dialog">
-    <button class="dialog-close" type="button" data-action="close-dialog" aria-label="关闭">×</button>
+  <section class="lesson-dialog lesson-scene" hidden aria-label="课程学习场景">
+    <button class="dialog-close" type="button" data-action="close-scene" aria-label="返回启程之森">←</button>
     <div class="lesson-dialog__art"></div>
+    <div class="scene-shade" aria-hidden="true"></div>
     <div class="lesson-dialog__content">
       <div class="lesson-heading">
         <span class="card-kicker" data-dialog-kicker></span>
@@ -110,7 +111,73 @@
         <button class="primary-button" type="button" data-action="complete-lesson" disabled>完成本站 <span aria-hidden="true">→</span></button>
       </footer>
     </div>
-  </dialog>
+  </section>
+
+  <section class="cluster-game" hidden aria-label="聚类小游戏：星群信标">
+    <div class="cluster-game__backdrop" aria-hidden="true"></div>
+    <header class="cluster-header">
+      <button class="back-button" type="button" data-action="close-game"><span aria-hidden="true">←</span> 返回地图</button>
+      <div>
+        <span class="brand__eyebrow">CLUSTER MISSION · K-MEANS</span>
+        <h2>星群信标</h2>
+        <p>不用标签，只看彼此的距离，让散落的星灵自动组成部落</p>
+      </div>
+      <div class="cluster-level"><span>任务</span><b>01</b></div>
+    </header>
+
+    <main class="cluster-layout">
+      <aside class="mission-panel game-panel">
+        <span class="card-kicker">MISSION BRIEF</span>
+        <h3>找出 3 个星灵部落</h3>
+        <p>星灵没有“正确答案”标签。你只能根据它们在星图上的位置，把相似、靠近的成员聚在一起。</p>
+        <div class="mission-step is-current" data-game-step="k"><b>1</b><span>选择聚类数量 K</span></div>
+        <div class="mission-step" data-game-step="seed"><b>2</b><span>选择 K 个初始中心</span></div>
+        <div class="mission-step" data-game-step="assign"><b>3</b><span>按最近距离划分星群</span></div>
+        <div class="mission-step" data-game-step="update"><b>4</b><span>把信标移到群体中心</span></div>
+
+        <div class="k-picker" aria-label="选择聚类数量">
+          <button type="button" data-action="choose-k" data-k="2">K = 2</button>
+          <button type="button" data-action="choose-k" data-k="3">K = 3</button>
+          <button type="button" data-action="choose-k" data-k="4">K = 4</button>
+        </div>
+        <p class="game-message" data-game-message aria-live="polite">先观察星图，你认为这里有几个自然形成的群体？</p>
+      </aside>
+
+      <section class="star-map-panel game-panel">
+        <div class="star-map-toolbar">
+          <div><span class="pulse-dot"></span><b data-game-phase>等待选择 K</b></div>
+          <span>迭代 <b data-game-iteration>0</b></span>
+        </div>
+        <div class="cluster-board" data-cluster-board aria-label="二维星灵分布图">
+          <div class="axis axis--x">特征 X →</div>
+          <div class="axis axis--y">特征 Y →</div>
+          <div class="board-grid" aria-hidden="true"></div>
+          <div class="cluster-points"></div>
+          <div class="cluster-centers"></div>
+        </div>
+        <div class="game-controls">
+          <button class="secondary-game-button" type="button" data-action="reset-game">重新布置</button>
+          <button class="primary-game-button" type="button" data-action="game-next" disabled>请先选择 K</button>
+        </div>
+      </section>
+
+      <aside class="insight-panel game-panel">
+        <span class="card-kicker">LIVE INSIGHT</span>
+        <h3>聚类观察站</h3>
+        <div class="cluster-stats">
+          <div><span>星灵数量</span><b>15</b></div>
+          <div><span>聚类数量</span><b data-stat-k>?</b></div>
+          <div><span>中心移动</span><b data-stat-move>--</b></div>
+        </div>
+        <div class="cluster-legend" data-cluster-legend></div>
+        <div class="insight-card">
+          <b data-insight-title>什么是聚类？</b>
+          <p data-insight-text>聚类是一种无监督学习：数据只有特征，没有预先给出的标签。算法尝试让同组样本更相似、不同组样本差异更大。</p>
+        </div>
+        <button class="finish-game-button" type="button" data-action="finish-game" hidden>收下聚类徽章，返回地图 →</button>
+      </aside>
+    </main>
+  </section>
 
   <script src="app.js"></script>
 </body>

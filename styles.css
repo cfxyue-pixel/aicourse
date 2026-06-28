@@ -13,6 +13,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html, body { width: 100%; min-height: 100%; margin: 0; }
 
@@ -565,6 +566,283 @@ button { font: inherit; }
 
 .is-transitioning .map-canvas { animation: map-leave .46s ease both; }
 
+/* Immersive lesson scenes */
+.lesson-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100vw;
+  height: 100dvh;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: #102f45;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.lesson-scene:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(320px, 39vw) minmax(580px, 1fr);
+  animation: scene-enter .55s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.lesson-scene .lesson-dialog__art {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  width: 52vw;
+  height: 100%;
+  min-height: 0;
+  filter: saturate(1.06);
+}
+
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(4,28,46,.05) 0%, rgba(4,28,46,.12) 28%, rgba(255,249,235,.94) 48%, #fff9eb 62%);
+}
+
+.lesson-scene .dialog-close {
+  top: 24px;
+  right: auto;
+  left: 24px;
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.7);
+  box-shadow: 0 7px 24px rgba(3,26,44,.32);
+  font-size: 20px;
+}
+
+.lesson-scene .lesson-dialog__content {
+  position: relative;
+  z-index: 2;
+  grid-column: 2;
+  height: 100dvh;
+  min-height: 0;
+  background: transparent;
+}
+
+.lesson-scene .lesson-heading { padding: 34px 48px 20px; }
+.lesson-scene .lesson-scroll { padding: 25px 48px 34px; }
+.lesson-scene .lesson-footer { padding: 15px 48px; background: rgba(255,250,240,.9); }
+.lesson-scene .lesson-section { animation: content-rise .55s ease both; }
+.lesson-scene .lesson-section:nth-child(2) { animation-delay: .08s; }
+.lesson-scene .activity-panel { animation: content-rise .55s .14s ease both; }
+
+/* Dedicated clustering game */
+.cluster-game {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  min-width: 980px;
+  min-height: 650px;
+  overflow: auto;
+  color: #eaf7ff;
+  background: #071a34;
+  isolation: isolate;
+}
+
+.cluster-game:not([hidden]) { display: block; animation: scene-enter .5s ease both; }
+
+.cluster-game__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(4,18,43,.88), rgba(6,18,38,.94)),
+    url("../ai-course-map-assets/02_intro_continent/locations/06_game_portal/game_portal_bg.png") center / cover;
+}
+
+.cluster-game__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(106,225,255,.42) 1px, transparent 1.5px);
+  background-size: 52px 52px;
+  opacity: .16;
+}
+
+.cluster-header {
+  display: grid;
+  height: 106px;
+  padding: 18px 28px;
+  grid-template-columns: 190px 1fr 90px;
+  align-items: center;
+  border-bottom: 1px solid rgba(113,211,242,.22);
+  background: rgba(5,22,48,.72);
+  backdrop-filter: blur(16px);
+}
+
+.cluster-header > div:nth-child(2) { text-align: center; }
+.cluster-header h2 { margin: 1px 0 0; font-family: Georgia, "STKaiti", serif; font-size: 32px; letter-spacing: .08em; }
+.cluster-header p { margin: 3px 0 0; color: #9fc4d6; font-size: 12px; }
+.cluster-header .brand__eyebrow { color: #65e8ff; }
+
+.cluster-level {
+  justify-self: end;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid rgba(114,226,255,.35);
+  border-radius: 50%;
+  background: rgba(24,102,137,.25);
+  box-shadow: inset 0 0 20px rgba(53,214,255,.14);
+}
+.cluster-level span { margin-bottom: -14px; color: #7ba8bb; font-size: 9px; letter-spacing: .18em; }
+.cluster-level b { font-size: 22px; }
+
+.cluster-layout {
+  display: grid;
+  height: calc(100dvh - 106px);
+  min-height: 544px;
+  padding: 16px 20px 20px;
+  grid-template-columns: 250px minmax(470px, 1fr) 240px;
+  gap: 14px;
+}
+
+.game-panel {
+  border: 1px solid rgba(102,216,244,.22);
+  border-radius: 17px;
+  background: linear-gradient(145deg, rgba(12,48,79,.82), rgba(6,28,57,.86));
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 18px 38px rgba(1,10,26,.23);
+  backdrop-filter: blur(12px);
+}
+
+.mission-panel, .insight-panel { padding: 22px 19px; overflow: auto; }
+.game-panel .card-kicker { color: #55dcf2; }
+.game-panel h3 { margin: 6px 0 10px; font-family: Georgia, "STKaiti", serif; font-size: 20px; }
+.mission-panel > p { margin: 0 0 18px; color: #a9c7d5; font-size: 12px; line-height: 1.7; }
+
+.mission-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 7px 0;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #7e9bad;
+  font-size: 12px;
+}
+.mission-step b { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid currentColor; border-radius: 50%; }
+.mission-step.is-current { border-color: rgba(73,222,245,.4); color: #eafcff; background: rgba(39,172,198,.15); }
+.mission-step.is-done { color: #67e2af; }
+
+.k-picker { display: grid; margin-top: 18px; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.k-picker button {
+  padding: 9px 4px;
+  border: 1px solid rgba(105,211,232,.3);
+  border-radius: 8px;
+  color: #baddE9;
+  background: rgba(7,35,63,.6);
+  cursor: pointer;
+}
+.k-picker button:hover, .k-picker button.is-selected { color: #052d44; border-color: #79edff; background: #71e3f2; box-shadow: 0 0 16px rgba(75,220,244,.35); }
+.game-message { min-height: 48px; margin-top: 13px !important; padding: 10px; border-left: 2px solid #4cd7ed; background: rgba(41,130,153,.12); color: #c5e5ef !important; }
+
+.star-map-panel { display: flex; min-height: 0; padding: 13px; flex-direction: column; }
+.star-map-toolbar { display: flex; height: 34px; align-items: center; justify-content: space-between; padding: 0 5px; color: #a7c8d6; font-size: 11px; }
+.star-map-toolbar > div { display: flex; align-items: center; gap: 7px; }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #5be6f5; box-shadow: 0 0 12px #5be6f5; }
+
+.cluster-board {
+  position: relative;
+  min-height: 360px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid rgba(104,226,246,.38);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(35,112,158,.3), transparent 55%),
+    linear-gradient(145deg, rgba(3,20,45,.96), rgba(6,34,67,.92));
+  box-shadow: inset 0 0 50px rgba(0,7,28,.72);
+}
+
+.board-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(84,183,213,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(84,183,213,.08) 1px, transparent 1px);
+  background-size: 10% 10%;
+}
+.axis { position: absolute; z-index: 1; color: rgba(146,208,225,.52); font-size: 9px; letter-spacing: .08em; }
+.axis--x { right: 12px; bottom: 7px; }
+.axis--y { left: 7px; top: 13px; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+.star-point {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  color: white;
+  background: #dffaff;
+  box-shadow: 0 0 11px #75e5f7;
+  cursor: pointer;
+  transition: left .55s ease, top .55s ease, background .3s ease, box-shadow .3s ease, transform .2s ease;
+}
+.star-point::after { content: "✦"; color: #0b6585; font-size: 10px; }
+.star-point:hover { transform: translate(-50%, -50%) scale(1.22); }
+.star-point.is-seed { outline: 3px solid #ffd66f; outline-offset: 3px; }
+.star-point.cluster-0 { background: #57dcf4; box-shadow: 0 0 14px #4bdcf6; }
+.star-point.cluster-1 { background: #ff7490; box-shadow: 0 0 14px #ff6685; }
+.star-point.cluster-2 { background: #ffc95d; box-shadow: 0 0 14px #ffc04d; }
+.star-point.cluster-3 { background: #aa8cff; box-shadow: 0 0 14px #a783ff; }
+
+.cluster-center {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 3px solid white;
+  border-radius: 7px;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.22), 0 0 24px currentColor;
+  transition: left .7s cubic-bezier(.2,.8,.2,1), top .7s cubic-bezier(.2,.8,.2,1);
+}
+.cluster-center span { transform: rotate(-45deg); font-weight: 900; }
+.cluster-center.cluster-0 { color: #57dcf4; background: #168da5; }
+.cluster-center.cluster-1 { color: #ff7490; background: #b43450; }
+.cluster-center.cluster-2 { color: #ffc95d; background: #b67b17; }
+.cluster-center.cluster-3 { color: #aa8cff; background: #644bb4; }
+
+.game-controls { display: flex; gap: 9px; padding-top: 11px; }
+.game-controls button { padding: 10px 15px; border-radius: 20px; font-weight: 800; cursor: pointer; }
+.secondary-game-button { border: 1px solid rgba(154,217,231,.38); color: #a9cad6; background: rgba(3,28,52,.55); }
+.primary-game-button { flex: 1; border: 1px solid #b2862a; color: #082d42; background: linear-gradient(#ffe186, #edae32); box-shadow: 0 6px 18px rgba(231,166,43,.2); }
+.primary-game-button:disabled { filter: grayscale(.8); opacity: .5; cursor: default; }
+
+.cluster-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 18px 0; }
+.cluster-stats div { padding: 9px 4px; border: 1px solid rgba(100,203,225,.18); border-radius: 9px; text-align: center; background: rgba(10,44,72,.55); }
+.cluster-stats span { display: block; color: #789aaa; font-size: 9px; }
+.cluster-stats b { display: block; margin-top: 4px; color: #e9fbff; font-size: 17px; }
+.cluster-legend { display: grid; gap: 7px; margin: 12px 0; }
+.legend-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 9px; border-radius: 8px; background: rgba(14,54,83,.62); font-size: 11px; }
+.legend-swatch { width: 10px; height: 10px; margin-right: 7px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.legend-swatch.cluster-0 { display: inline-block; color: #57dcf4; background: #57dcf4; }
+.legend-swatch.cluster-1 { display: inline-block; color: #ff7490; background: #ff7490; }
+.legend-swatch.cluster-2 { display: inline-block; color: #ffc95d; background: #ffc95d; }
+.legend-swatch.cluster-3 { display: inline-block; color: #aa8cff; background: #aa8cff; }
+
+.insight-card { margin-top: 17px; padding: 13px; border: 1px solid rgba(246,199,88,.25); border-radius: 10px; background: rgba(148,101,20,.12); }
+.insight-card b { color: #ffd978; }
+.insight-card p { margin: 7px 0 0; color: #b5ced9; font-size: 11px; line-height: 1.65; }
+.finish-game-button { width: 100%; margin-top: 14px; padding: 11px; border: 1px solid #e8ba54; border-radius: 20px; color: #173547; background: #ffd66e; font-weight: 900; cursor: pointer; }
+
+@keyframes scene-enter { from { opacity: 0; transform: scale(1.025); } }
+@keyframes content-rise { from { opacity: 0; transform: translateY(16px); } }
+
 @keyframes map-arrive { from { opacity: 0; transform: scale(1.08); filter: blur(5px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
 @keyframes map-leave { to { opacity: 0; transform: scale(1.12); filter: blur(6px); } }
 @keyframes node-float { 50% { transform: translate(-50%, calc(-50% - 7px)); } }
@@ -593,6 +871,25 @@ button { font: inherit; }
   .primary-button { width: 100%; min-width: 0; }
   .term-list, .choice-grid, .reveal-grid, .quiz-options { grid-template-columns: 1fr; }
   .simulator { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .lesson-scene { overflow: auto; }
+  .lesson-scene:not([hidden]) { display: block; }
+  .lesson-scene .lesson-dialog__art { position: relative; width: 100%; height: 34dvh; min-height: 230px; }
+  .lesson-scene .scene-shade { background: linear-gradient(180deg, rgba(3,27,45,.08) 0%, rgba(255,249,235,.96) 34dvh, #fff9eb 48dvh); }
+  .lesson-scene .lesson-dialog__content { height: auto; min-height: 66dvh; }
+  .lesson-scene .lesson-heading, .lesson-scene .lesson-scroll { padding-left: 22px; padding-right: 22px; }
+  .lesson-scene .lesson-footer { position: sticky; bottom: 0; padding: 13px 22px; }
+
+  .cluster-game { min-width: 0; min-height: 0; }
+  .cluster-header { height: 96px; padding: 14px 12px; grid-template-columns: 105px 1fr 52px; }
+  .cluster-header h2 { font-size: 25px; }
+  .cluster-header p { display: none; }
+  .cluster-level { width: 48px; height: 48px; }
+  .cluster-layout { height: auto; min-height: calc(100dvh - 96px); padding: 10px; grid-template-columns: 1fr; }
+  .mission-panel, .insight-panel { overflow: visible; }
+  .star-map-panel { min-height: 590px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
