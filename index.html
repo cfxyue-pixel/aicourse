@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#092d50">
+  <title>AI 学习世界 · 互动课程地图</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app" aria-live="polite"></main>
+
+  <template id="world-template">
+    <section class="screen world-screen">
+      <header class="hud hud--top">
+        <div class="brand">
+          <span class="brand__eyebrow">AI LEARNING WORLD</span>
+          <h1>人工智能学习世界</h1>
+          <p>选择一片大陆，开始你的探索旅程</p>
+        </div>
+        <button class="sound-toggle icon-button" type="button" aria-label="切换环境音" title="环境音（演示）">
+          <span aria-hidden="true">♫</span>
+        </button>
+      </header>
+
+      <section class="map-shell" aria-label="世界地图">
+        <div class="map-canvas world-map">
+          <img src="../ai-course-map-assets/01_world_map/base/world_map_full.png" alt="由五片学习大陆组成的人工智能世界地图">
+          <div class="map-vignette" aria-hidden="true"></div>
+          <div class="world-hotspots"></div>
+        </div>
+      </section>
+
+      <aside class="journey-card parchment-card">
+        <div class="journey-card__icon" aria-hidden="true">✦</div>
+        <div>
+          <span class="card-kicker">当前旅程</span>
+          <strong>启程之森</strong>
+          <div class="progress-track"><span></span></div>
+          <small>第 1 / 5 片大陆</small>
+        </div>
+      </aside>
+
+      <div class="map-hint"><span aria-hidden="true">☝</span> 点击发光坐标进入大陆</div>
+    </section>
+  </template>
+
+  <template id="continent-template">
+    <section class="screen continent-screen">
+      <header class="hud hud--continent">
+        <button class="back-button" type="button" data-action="world"><span aria-hidden="true">←</span> 世界地图</button>
+        <div class="chapter-title">
+          <span class="brand__eyebrow">CHAPTER 01</span>
+          <h1>启程之森</h1>
+          <p>从“什么是人工智能”开始，建立第一张知识地图</p>
+        </div>
+        <button class="reset-button icon-button" type="button" data-action="reset" aria-label="重置学习进度" title="重置学习进度">↻</button>
+      </header>
+
+      <section class="map-shell" aria-label="启程之森课程地图">
+        <div class="map-canvas continent-map">
+          <img src="../ai-course-map-assets/02_intro_continent/base/intro_continent_map_full.png" alt="启程之森，包含七个课程站点">
+          <div class="map-vignette" aria-hidden="true"></div>
+          <svg class="route-layer" viewBox="0 0 1000 750" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M500,390 C610,390 720,365 760,315 S710,150 650,145 S390,170 285,180 S205,315 245,365 S395,520 480,615 S690,600 785,540" />
+          </svg>
+          <div class="lesson-hotspots"></div>
+        </div>
+      </section>
+
+      <aside class="chapter-progress parchment-card">
+        <span class="card-kicker">探索进度</span>
+        <strong><span data-progress-count>0</span> / 7 站</strong>
+        <div class="progress-track"><span data-progress-bar></span></div>
+      </aside>
+
+      <div class="map-hint"><span class="legend-dot legend-dot--active"></span> 可探索 <span class="legend-dot legend-dot--done"></span> 已完成 <span class="legend-dot legend-dot--locked"></span> 未解锁</div>
+    </section>
+  </template>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="lesson-dialog">
+    <button class="dialog-close" type="button" data-action="close-dialog" aria-label="关闭">×</button>
+    <div class="lesson-dialog__art"></div>
+    <div class="lesson-dialog__content">
+      <div class="lesson-heading">
+        <span class="card-kicker" data-dialog-kicker></span>
+        <h2 data-dialog-title></h2>
+        <p data-dialog-description></p>
+        <div class="lesson-meta"><span>⏱ <b data-dialog-duration></b></span><span>◆ 第一课：初识机器学习</span></div>
+      </div>
+      <div class="lesson-scroll">
+        <section class="lesson-section">
+          <h3>这一站学什么</h3>
+          <div class="lesson-goals" data-dialog-goals></div>
+        </section>
+        <section class="lesson-section lesson-content" data-dialog-content></section>
+        <section class="activity-panel">
+          <div class="activity-panel__head">
+            <div><span class="card-kicker">CHECKPOINT</span><h3 data-activity-title></h3></div>
+            <span class="activity-status" data-activity-status>待完成</span>
+          </div>
+          <div data-activity-body></div>
+          <p class="activity-feedback" data-activity-feedback aria-live="polite"></p>
+        </section>
+      </div>
+      <footer class="lesson-footer">
+        <span class="lesson-footer__tip">完成小挑战后即可点亮本站</span>
+        <button class="primary-button" type="button" data-action="complete-lesson" disabled>完成本站 <span aria-hidden="true">→</span></button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
